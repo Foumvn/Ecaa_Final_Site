@@ -19,6 +19,7 @@
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-video-player/1.9.10/cld-video-player.min.css" />
 
   <!-- Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
@@ -146,10 +147,24 @@
               </ul>
               
 
-              <div class="watch-video d-flex align-items-center position-relative">
-                <i class="bi bi-play-circle"></i>
-                <a href="https://res.cloudinary.com/dknpxid4n/video/upload/v1752971323/WhatsApp_Video_2025-07-19_at_20.59.48_lrtdtx.mp4" class="glightbox stretched-link">Watch Video</a>
+              <div class="watch-video d-flex align-items-center position-relative" style="width:100%;max-width:600px;">
+                <button id="show-video-btn" class="btn btn-primary mb-3">
+                  <i class="bi bi-play-circle"></i> Watch Video
+                </button>
+                <div id="video-container"></div>
               </div>
+              <script>
+                document.getElementById('show-video-btn').addEventListener('click', function() {
+                  this.style.display = 'none';
+                  var container = document.getElementById('video-container');
+                  container.innerHTML = `
+                    <video controls autoplay width="100%" style="max-width:600px;">
+                      <source src="https://res.cloudinary.com/dknpxid4n/video/upload/v1752971323/WhatsApp_Video_2025-07-19_at_20.59.48_lrtdtx.mp4" type="video/mp4">
+                      Votre navigateur ne supporte pas la vidéo.
+                    </video>
+                  `;
+                });
+              </script>
             </div>
           </div>
 
@@ -472,6 +487,8 @@
   <script defer src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
   <script defer src="assets/vendor/waypoints/noframework.waypoints.js"></script>
   <script defer src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.11.4/cloudinary-core-shrinkwrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-video-player/1.9.10/cld-video-player.min.js"></script>
 
   <!-- Main JS File -->
   <script defer src="assets/js/main.js"></script>
