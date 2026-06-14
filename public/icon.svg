@@ -1,0 +1,5 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="180" rx="40" fill="#111827"/>
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="70" fill="#bef264" font-style="italic">ECA</text>
+  <path d="M40 140 H140" stroke="#bef264" stroke-width="8" stroke-linecap="round"/>
+</svg>
