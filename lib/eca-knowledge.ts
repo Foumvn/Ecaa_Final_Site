@@ -1,0 +1,141 @@
+export const ECA_KNOWLEDGE = {
+  company: {
+    name: "ECA Technology",
+    tagline: "Votre satisfaction, notre priorité.",
+    founded: 2016,
+    description: "ECA Technology offre des services de réparation électronique et automobile, de la formation professionnelle et de la conception design au Cameroun.",
+    fullDescription: "Découvrez ECA Technology, une entreprise camerounaise spécialisée dans la réparation électronique et automobile, la formation professionnelle et la conception design. Depuis 2016, nous accompagnons nos clients avec expertise, précision et un engagement total envers la qualité de nos services.",
+    mission: "Notre mission est de restaurer vos outils technologiques à l'état initial avec une expertise de pointe et une passion pour l'innovation, tout en formant la prochaine génération de techniciens camerounais.",
+    address: "Yaoundé, Cameroun - Quartier Ékié, face au Petit Marché d'Ékié",
+    phone: "+237 6 56 49 03 21",
+    email: "ecatehnology90@gmail.com",
+    website: "https://eca-technology.cm",
+  },
+  stats: {
+    clientsSatisfaits: "500+",
+    projetsRealises: "1200+",
+    anneesExperience: 8,
+    membresEquipe: 15,
+  },
+  services: [
+    {
+      id: 1,
+      nom: "Réparation électrique & électronique",
+      description: "Cartes mères, appareils industriels, matériel biomédical, écrans, etc.",
+      image: "/images/eca/portfolio/1.webp",
+    },
+    {
+      id: 2,
+      nom: "Réparation automobile",
+      description: "Reprogammation de calculateurs (ECU), diagnostic scanner, réparation de tableaux de bord, BSI, clés programmables.",
+      image: "/images/eca/portfolio/5.webp",
+    },
+    {
+      id: 3,
+      nom: "Formation professionnelle",
+      description: "Stages pratiques en électronique et électricité.",
+      image: "/images/eca/hero/groupe.webp",
+    },
+    {
+      id: 4,
+      nom: "Conception Design",
+      description: "Graphisme, identité visuelle, logos professionnels.",
+      image: "/images/eca/portfolio/masonry-portfolio-4.webp",
+    },
+    {
+      id: 5,
+      nom: "Maintenance Software & Hardware",
+      description: "Maintenance informatique complète.",
+      image: "/images/eca/portfolio/8.webp",
+    },
+    {
+      id: 6,
+      nom: "Programmation automobile",
+      description: "Programmation des systèmes automobiles avancés.",
+      image: "/images/eca/portfolio/20.webp",
+    },
+  ],
+  equipe: [
+    {
+      id: 1,
+      nom: "Fongang Mathieu",
+      role: "Directeur Général (Patron/Fondateur)",
+      description: "Fondateur, Directeur Général et Visionnaire de l'entreprise. C'est le boss et le chef suprême d'ECA Technology.",
+      image: "/images/eca/team/IMG_6760-removebg-preview.webp",
+    },
+    {
+      id: 2,
+      nom: "Njamen Leonnel",
+      role: "Expert Technicien",
+      description: "Chef du département des téléphones et micro-électronique",
+      image: "/images/eca/team/IMG_6729-removebg-preview.webp",
+    },
+    {
+      id: 3,
+      nom: "Nkeing Manuela",
+      role: "Mécatronique",
+      description: "Assistant direction mécatronique",
+      image: "/images/eca/team/IMG_6755-removebg-preview.webp",
+    },
+    {
+      id: 4,
+      nom: "Djoumessi Francklin",
+      role: "Spécialiste Affichage",
+      description: "Chef de département Réparation TV et Moniteurs",
+      image: "/images/eca/team/IMG_6766-removebg-preview.webp",
+    },
+    {
+      id: 5,
+      nom: "Tchidjie Claude",
+      role: "Programmation",
+      description: "Chef de département laptop & desktop et Programmation",
+      image: "/images/eca/team/IMG_6770-removebg-preview.webp",
+    },
+  ],
+  navigation: {
+    liens: [
+      { nom: "Services", href: "#services" },
+      { nom: "Formation", href: "#formation" },
+      { nom: "Portfolio", href: "#portfolio" },
+      { nom: "Équipe", href: "#equipe" },
+    ],
+    reseauxSociaux: {
+      facebook: "https://www.facebook.com/profile.php?id=61550682794649",
+      linkedin: "https://www.linkedin.com/home?originalSubdomain=cm",
+      whatsapp: "https://wa.me/237656490321",
+    },
+  },
+  partenaires: [
+    { nom: "Ministère", logo: "/images/eca/clients/ministere.webp" },
+    { nom: "CFA", logo: "/images/eca/clients/cfa.webp" },
+    { nom: "Safyad", logo: "/images/eca/clients/safyad.webp" },
+    { nom: "Elect", logo: "/images/eca/clients/elect.webp" },
+  ],
+  pages: {
+    accueil: {
+      sections: [
+        "Header (navigation principale)",
+        "HeroSection (présentation avec image d'équipe et tagline)",
+        "PhilosophySection (Réparation & Formation, Depuis 2016)",
+        "FeaturedProductsSection (6 cartes de services)",
+        "TechnologySection (Notre Expertise)",
+        "GallerySection (galerie horizontale défilante de 8 images)",
+        "CollectionSection (5 membres d'équipe)",
+        "EditorialSection (statistiques: 500+ clients, 1200+ projets, 8 ans, 15 membres + vidéo)",
+        "TestimonialsSection (mission statement + image)",
+        "ContactSection (formulaire de contact + infos)",
+        "FooterSection (partenaires, liens, réseaux sociaux)",
+      ],
+    },
+  },
+  contact: {
+    formulaire: {
+      champs: [
+        "Nom Complet (obligatoire)",
+        "Email (obligatoire)",
+        "Sujet de votre demande (obligatoire) - Ex: Réparation calculateur moteur / Devis formation",
+        "Votre Message (obligatoire) - Décrivez votre besoin ou votre panne de manière détaillée",
+      ],
+    },
+  },
+};
