@@ -45,8 +45,14 @@ export function FooterSection() {
         <div className="grid grid-cols-2 gap-12 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 lg:col-span-2">
-            <Link href="/" className="text-lg font-medium text-foreground">
-              ECA Technology
+            <Link href="/" className="inline-block">
+              <Image
+                src="/images/logo.png"
+                alt="ECA Technology"
+                width={158}
+                height={64}
+                className="h-10 w-auto object-contain"
+              />
             </Link>
             <div className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               <p>Ékié, Yaoundé - Cameroun</p>

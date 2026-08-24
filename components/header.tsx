@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X, Briefcase, GraduationCap, Image as ImageIcon, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -56,12 +57,14 @@ export function Header() {
 
         {/* Logo */}
         <Link href="/" className="relative z-10 flex items-center gap-3 group shrink-0">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 ${isScrolled ? "bg-primary text-primary-foreground" : "bg-white text-primary"}`}>
-            <span className="font-bold text-xs italic">ECA</span>
-          </div>
-          <span className={`hidden sm:block text-base font-bold tracking-tight transition-colors duration-300 ${isScrolled ? "text-foreground" : "text-white"}`}>
-            Technology
-          </span>
+          <Image
+            src="/images/logo.png"
+            alt="ECA Technology"
+            width={158}
+            height={64}
+            priority
+            className="h-10 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Navigation */}

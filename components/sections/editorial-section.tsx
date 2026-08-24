@@ -39,7 +39,7 @@ export function EditorialSection() {
           muted
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
-          src="https://res.cloudinary.com/dknpxid4n/video/upload/v1752971323/WhatsApp_Video_2025-07-19_at_20.59.48_lrtdtx.mp4"
+          src="/video1.mp4"
         />
       </div>
     </section>
