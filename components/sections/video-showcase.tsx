@@ -132,7 +132,7 @@ export function VideoShowcase() {
                 }}
               >
                 <a
-                  href="https://wa.me/237690581760"
+                  href="https://wa.me/237656490321"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-medium text-black transition-all duration-300 hover:bg-white/90 hover:shadow-lg hover:shadow-white/10"

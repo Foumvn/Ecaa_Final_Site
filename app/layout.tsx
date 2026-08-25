@@ -10,10 +10,7 @@ export const metadata: Metadata = {
   description: 'ECA Technology - Réparation électronique, automobile, formation et conception design au Cameroun. Yaoundé, Ékié.',
   keywords: 'ECA Technology, réparation, électronique, automobile, formation, Cameroun, Yaoundé',
   icons: {
-    icon: [
-      { url: '/icon-32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icon-48.png', sizes: '48x48', type: 'image/png' },
-    ],
+    icon: '/icon-180.png',
     apple: '/icon-180.png',
   },
 }
