@@ -3,7 +3,7 @@
 import Image, { type ImageProps } from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-interface FadeImageProps extends Omit<ImageProps, "onLoad"> {
+interface FadeImageProps extends Omit<ImageProps, "onLoad" | "onError"> {
   fadeDelay?: number;
 }
 
@@ -43,6 +43,10 @@ export function FadeImage({ className, fadeDelay = 0, ...props }: FadeImageProps
           isVisible && isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-[1.02]"
         }`}
         onLoad={() => setIsLoaded(true)}
+        onError={(event) => {
+          console.error("FadeImage: chargement de l'image échoué:", props.src, event);
+          setIsLoaded(true);
+        }}
       />
     </div>
   );

@@ -13,22 +13,31 @@ export function ContactSection() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const form = e.currentTarget;
         setIsSubmitting(true);
 
-        const formData = new FormData(e.currentTarget);
-        const data = {
-            name: formData.get("name"),
-            email: formData.get("email"),
-            subject: formData.get("subject"),
-            message: formData.get("message"),
-        };
+        try {
+            const formData = new FormData(form);
+            const data = {
+                name: formData.get("name"),
+                email: formData.get("email"),
+                subject: formData.get("subject"),
+                message: formData.get("message"),
+            };
 
-        // Simulation d'envoi
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+            // Simulation d'envoi
+            await new Promise((resolve) => setTimeout(resolve, 1500));
 
-        toast.success("Message envoyé ! Notre équipe vous contactera sous 24h.");
-        (e.target as HTMLFormElement).reset();
-        setIsSubmitting(false);
+            toast.success("Message envoyé ! Notre équipe vous contactera sous 24h.");
+            form.reset();
+        } catch (err) {
+            console.error("ContactSection: envoi du formulaire échoué:", err);
+            toast.error(
+                "L'envoi a échoué. Veuillez réessayer ou nous contacter au +237 6 56 49 03 21."
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (

@@ -27,14 +27,23 @@ function loadMessages(): Message[] {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch {}
+  } catch (err) {
+    console.error("ChatBot: historique local illisible, réinitialisation:", err);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (removeErr) {
+      console.error("ChatBot: impossible de supprimer l'historique local:", removeErr);
+    }
+  }
   return [INITIAL_MESSAGE];
 }
 
 function saveMessages(messages: Message[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  } catch {}
+  } catch (err) {
+    console.error("ChatBot: impossible d'enregistrer l'historique local:", err);
+  }
 }
 
 export function ChatBot() {
@@ -43,6 +52,7 @@ export function ChatBot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copyErrorId, setCopyErrorId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesLoaded = useRef(false);
@@ -81,7 +91,11 @@ export function ChatBot() {
       await navigator.clipboard.writeText(content);
       setCopiedId(index);
       setTimeout(() => setCopiedId(null), 2000);
-    } catch {}
+    } catch (err) {
+      console.error("ChatBot: copie dans le presse-papiers refusée:", err);
+      setCopyErrorId(index);
+      setTimeout(() => setCopyErrorId(null), 2000);
+    }
   }, []);
 
   const handleSend = async () => {
@@ -93,7 +107,7 @@ export function ChatBot() {
     setInput("");
     setIsLoading(true);
 
-    const assistantIndex = updatedMessages.length;
+    let streamStarted = false;
 
     try {
       const res = await fetch("/api/chat", {
@@ -103,8 +117,16 @@ export function ChatBot() {
       });
 
       if (!res.ok) {
+        const detail = await res
+          .json()
+          .then((b: unknown) => (b as { error?: string })?.error)
+          .catch(() => undefined);
+        console.error("ChatBot: /api/chat a répondu", res.status, detail ?? "<sans détail>");
+
         let errorMsg = "Désolé, j'ai rencontré une erreur. Veuillez réessayer plus tard.";
-        if (res.status === 500) {
+        if (res.status === 502 || res.status === 503 || res.status === 504) {
+          errorMsg = "Désolé, le service de chat est injoignable pour le moment. Veuillez réessayer dans quelques instants.";
+        } else if (res.status === 500) {
           errorMsg = "Désolé, le service est temporairement indisponible. Veuillez réessayer plus tard.";
         } else if (res.status === 429) {
           errorMsg = "Désolé, vous avez envoyé trop de messages. Veuillez attendre un moment avant de réessayer.";
@@ -117,6 +139,7 @@ export function ChatBot() {
 
       const reader = res.body?.getReader();
       if (!reader) {
+        console.error("ChatBot: réponse /api/chat sans corps lisible");
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: "Désolé, je n'ai pas pu obtenir de réponse." },
@@ -127,30 +150,45 @@ export function ChatBot() {
       const decoder = new TextDecoder();
       let fullContent = "";
 
+      streamStarted = true;
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        const text = decoder.decode(value, { stream: true });
-        fullContent += text;
+          const text = decoder.decode(value, { stream: true });
+          fullContent += text;
 
-        setMessages((prev) => {
-          const updated = [...prev];
-          const lastIndex = updated.length - 1;
-          updated[lastIndex] = { ...updated[lastIndex], content: fullContent };
-          return updated;
-        });
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIndex = updated.length - 1;
+            updated[lastIndex] = { ...updated[lastIndex], content: fullContent };
+            return updated;
+          });
+        }
+      } finally {
+        reader.releaseLock();
       }
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Désolé, je n'ai pas pu me connecter au service. Vérifiez votre connexion internet et réessayez.",
-        },
-      ]);
+    } catch (err) {
+      console.error("ChatBot: envoi du message échoué:", err);
+      const errorMsg = streamStarted
+        ? "\n\n[La réponse a été interrompue. Veuillez réessayer.]"
+        : "Désolé, je n'ai pas pu me connecter au service. Vérifiez votre connexion internet et réessayez.";
+
+      setMessages((prev) => {
+        if (!streamStarted) {
+          return [...prev, { role: "assistant", content: errorMsg }];
+        }
+        const updated = [...prev];
+        const lastIndex = updated.length - 1;
+        updated[lastIndex] = {
+          ...updated[lastIndex],
+          content: `${updated[lastIndex]?.content ?? ""}${errorMsg}`.trimStart(),
+        };
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -219,10 +257,17 @@ export function ChatBot() {
                             <button
                               onClick={() => handleCopy(m.content, i)}
                               className="absolute -bottom-6 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-muted"
-                              aria-label="Copier le message"
+                              aria-label={
+                                copyErrorId === i ? "Copie impossible" : "Copier le message"
+                              }
+                              title={
+                                copyErrorId === i ? "Copie impossible dans ce navigateur" : undefined
+                              }
                             >
                               {copiedId === i ? (
                                 <Check size={12} className="text-green-500" />
+                              ) : copyErrorId === i ? (
+                                <X size={12} className="text-destructive" />
                               ) : (
                                 <Copy size={12} className="text-muted-foreground" />
                               )}

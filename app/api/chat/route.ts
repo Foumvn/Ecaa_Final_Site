@@ -3,23 +3,32 @@ import { buildSystemPrompt } from "@/lib/build-system-prompt";
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
 
+function jsonError(message: string, status: number) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { messages } = body;
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch (err) {
+      console.error("Chat API: corps de requête JSON invalide:", err);
+      return jsonError("Corps de requête JSON invalide", 400);
+    }
+
+    const { messages } = (body ?? {}) as { messages?: unknown };
 
     if (!messages || !Array.isArray(messages)) {
-      return new Response(
-        JSON.stringify({ error: "Messages invalides" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonError("Messages invalides", 400);
     }
 
     if (!MISTRAL_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Clé API Mistral non configurée" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      console.error("Chat API: MISTRAL_API_KEY absente de l'environnement");
+      return jsonError("Clé API Mistral non configurée", 500);
     }
 
     const systemMessage = {
@@ -33,46 +42,54 @@ export async function POST(req: Request) {
       messages: [systemMessage, ...messages],
     };
 
-    const response = await fetch(MISTRAL_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${MISTRAL_API_KEY}`,
-      },
-      body: JSON.stringify(mistralBody),
-    });
+    let response: Response;
+    try {
+      response = await fetch(MISTRAL_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${MISTRAL_API_KEY}`,
+        },
+        body: JSON.stringify(mistralBody),
+      });
+    } catch (err) {
+      console.error("Mistral API: échec de la requête réseau:", err);
+      return jsonError("Service de chat injoignable", 502);
+    }
 
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorText = await response.text().catch(() => "<corps illisible>");
       console.error("Mistral API error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: `Erreur API: ${response.status}` }),
-        { status: response.status, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonError(`Erreur API: ${response.status}`, response.status);
+    }
+
+    const upstreamBody = response.body;
+    if (!upstreamBody) {
+      console.error("Mistral API: réponse sans corps");
+      return jsonError("Réponse vide du service de chat", 502);
     }
 
     const stream = new ReadableStream({
       async start(controller) {
-        const reader = response.body?.getReader();
-        if (!reader) {
-          controller.close();
-          return;
-        }
+        const reader = upstreamBody.getReader();
 
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
+
+        let buffer = "";
 
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n").filter((line) => line.startsWith("data: "));
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
 
-            for (const line of lines) {
-              const data = line.slice(6);
-              if (data === "[DONE]") continue;
+            for (const line of lines.filter((l) => l.startsWith("data: "))) {
+              const data = line.slice(6).trim();
+              if (!data || data === "[DONE]") continue;
 
               try {
                 const parsed = JSON.parse(data);
@@ -80,16 +97,17 @@ export async function POST(req: Request) {
                 if (content) {
                   controller.enqueue(encoder.encode(content));
                 }
-              } catch {
-                // skip malformed JSON
+              } catch (err) {
+                console.warn("Chat API: fragment SSE illisible ignoré:", data, err);
               }
             }
           }
+          controller.close();
         } catch (err) {
           console.error("Stream error:", err);
+          controller.error(err instanceof Error ? err : new Error(String(err)));
         } finally {
           reader.releaseLock();
-          controller.close();
         }
       },
     });
@@ -102,9 +120,6 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("Chat API error:", err);
-    return new Response(
-      JSON.stringify({ error: "Erreur interne du serveur" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonError("Erreur interne du serveur", 500);
   }
 }
