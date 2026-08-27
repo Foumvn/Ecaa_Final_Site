@@ -1,8 +1,16 @@
 "use client";
 
-import { FadeImage } from "@/components/fade-image";
+import { HoverZoomImage } from "@/components/hover-zoom-image";
 
-const team = [
+interface TeamMember {
+  id: number;
+  name: string;
+  description: string;
+  role: string;
+  image: string;
+}
+
+const team: TeamMember[] = [
   {
     id: 1,
     name: "Ndjamen Leonnel",
@@ -40,6 +48,44 @@ const team = [
   },
 ];
 
+function TeamMemberCard({
+  member,
+  className,
+  showRole = false,
+}: {
+  member: TeamMember;
+  className?: string;
+  showRole?: boolean;
+}) {
+  return (
+    <div className={`group ${className ?? ""}`}>
+      <HoverZoomImage
+        src={member.image}
+        alt={member.name}
+        className="aspect-[2/3] bg-secondary"
+      />
+
+      <div className="py-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-medium leading-snug text-foreground">
+              {member.name}
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {member.description}
+            </p>
+          </div>
+          {showRole && (
+            <span className="font-medium text-foreground text-sm uppercase tracking-widest opacity-50">
+              {member.role}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CollectionSection() {
   return (
     <section id="equipe" className="bg-background">
@@ -55,65 +101,18 @@ export function CollectionSection() {
         {/* Mobile: Horizontal Carousel */}
         <div className="flex gap-6 overflow-x-auto px-6 pb-4 md:hidden snap-x snap-mandatory scrollbar-hide">
           {team.map((member) => (
-            <div key={member.id} className="group flex-shrink-0 w-[75vw] snap-center">
-              {/* Image */}
-              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-secondary">
-                <FadeImage
-                  src={member.image || "/placeholder.svg"}
-                  alt={member.name}
-                  fill
-                  className="object-cover group-hover:scale-105"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="py-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium leading-snug text-foreground">
-                      {member.name}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {member.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TeamMemberCard
+              key={member.id}
+              member={member}
+              className="flex-shrink-0 w-[75vw] snap-center"
+            />
           ))}
         </div>
 
         {/* Desktop: Grid */}
         <div className="hidden md:grid md:grid-cols-3 gap-8 md:px-12 lg:px-20">
           {team.map((member) => (
-            <div key={member.id} className="group">
-              {/* Image */}
-              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-secondary">
-                <FadeImage
-                  src={member.image || "/placeholder.svg"}
-                  alt={member.name}
-                  fill
-                  className="object-cover group-hover:scale-105"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="py-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium leading-snug text-foreground">
-                      {member.name}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {member.description}
-                    </p>
-                  </div>
-                  <span className="font-medium text-foreground text-sm uppercase tracking-widest opacity-50">
-                    {member.role}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <TeamMemberCard key={member.id} member={member} showRole />
           ))}
         </div>
       </div>

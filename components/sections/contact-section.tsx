@@ -7,6 +7,85 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
 import { MapPin, Phone, Mail, Facebook, Linkedin, MessageSquare } from "lucide-react";
+import { CONTACT, SOCIAL_LINKS } from "@/lib/site-config";
+
+const contactDetails = [
+    {
+        icon: MapPin,
+        title: "Atelier Principal",
+        value: CONTACT.city,
+        note: CONTACT.landmark,
+    },
+    {
+        icon: Phone,
+        title: "Téléphone & WhatsApp",
+        value: CONTACT.phone,
+    },
+    {
+        icon: Mail,
+        title: "E-mail",
+        value: CONTACT.email,
+    },
+];
+
+const socialLinks = [
+    { icon: Facebook, href: SOCIAL_LINKS.facebook },
+    { icon: Linkedin, href: SOCIAL_LINKS.linkedin },
+    { icon: MessageSquare, href: SOCIAL_LINKS.whatsapp },
+];
+
+const formFields = [
+    {
+        id: "name",
+        label: "Nom Complet",
+        placeholder: "Ex: Jean Dupont",
+        type: "text",
+        halfWidth: true,
+    },
+    {
+        id: "email",
+        label: "Email",
+        placeholder: "votre@email.com",
+        type: "email",
+        halfWidth: true,
+    },
+    {
+        id: "subject",
+        label: "Sujet de votre demande",
+        placeholder: "Ex: Réparation calculateur moteur / Devis formation",
+        type: "text",
+        halfWidth: false,
+    },
+];
+
+const FIELD_LABEL_CLASS = "text-xs font-bold uppercase tracking-wider";
+const FIELD_INPUT_CLASS = "h-12 border-border/50 bg-background/50 focus-visible:ring-primary";
+
+function ContactField({
+    id,
+    label,
+    placeholder,
+    type,
+}: {
+    id: string;
+    label: string;
+    placeholder: string;
+    type: string;
+}) {
+    return (
+        <div className="space-y-3">
+            <Label htmlFor={id} className={FIELD_LABEL_CLASS}>{label}</Label>
+            <Input
+                id={id}
+                name={id}
+                type={type}
+                placeholder={placeholder}
+                required
+                className={FIELD_INPUT_CLASS}
+            />
+        </div>
+    );
+}
 
 export function ContactSection() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,46 +131,26 @@ export function ContactSection() {
                         </p>
 
                         <div className="mt-12 space-y-8">
-                            <div className="flex gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                    <MapPin size={24} />
+                            {contactDetails.map((detail) => (
+                                <div key={detail.title} className="flex gap-4">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                        <detail.icon size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-semibold uppercase tracking-widest text-foreground">{detail.title}</h4>
+                                        <p className="mt-1 text-muted-foreground">{detail.value}</p>
+                                        {detail.note && (
+                                            <p className="text-sm text-muted-foreground italic">{detail.note}</p>
+                                        )}
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-semibold uppercase tracking-widest text-foreground">Atelier Principal</h4>
-                                    <p className="mt-1 text-muted-foreground">Ékié, Yaoundé - Cameroun</p>
-                                    <p className="text-sm text-muted-foreground italic">Face au Petit Marché d'Ékié</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                    <Phone size={24} />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-semibold uppercase tracking-widest text-foreground">Téléphone & WhatsApp</h4>
-                                    <p className="mt-1 text-muted-foreground">+237 6 56 49 03 21</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                    <Mail size={24} />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-semibold uppercase tracking-widest text-foreground">E-mail</h4>
-                                    <p className="mt-1 text-muted-foreground">ecatehnology90@gmail.com</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
                         <div className="mt-12">
                             <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Suivez notre actualité</h4>
                             <div className="mt-4 flex gap-4">
-                                {[
-                                    { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61550682794649" },
-                                    { icon: Linkedin, href: "https://www.linkedin.com/home?originalSubdomain=cm" },
-                                    { icon: MessageSquare, href: "https://wa.me/237656490321" },
-                                ].map((social, i) => (
+                                {socialLinks.map((social) => (
                                     <a
                                         key={social.href}
                                         href={social.href}
@@ -111,40 +170,15 @@ export function ContactSection() {
                         <div className="rounded-3xl border border-border bg-card/50 p-8 shadow-xl backdrop-blur-sm md:p-10">
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 <div className="grid gap-8 md:grid-cols-2">
-                                    <div className="space-y-3">
-                                        <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider">Nom Complet</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            placeholder="Ex: Jean Dupont"
-                                            required
-                                            className="h-12 border-border/50 bg-background/50 focus-visible:ring-primary"
-                                        />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider">Email</Label>
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            placeholder="votre@email.com"
-                                            required
-                                            className="h-12 border-border/50 bg-background/50 focus-visible:ring-primary"
-                                        />
-                                    </div>
+                                    {formFields.filter((field) => field.halfWidth).map((field) => (
+                                        <ContactField key={field.id} {...field} />
+                                    ))}
                                 </div>
+                                {formFields.filter((field) => !field.halfWidth).map((field) => (
+                                    <ContactField key={field.id} {...field} />
+                                ))}
                                 <div className="space-y-3">
-                                    <Label htmlFor="subject" className="text-xs font-bold uppercase tracking-wider">Sujet de votre demande</Label>
-                                    <Input
-                                        id="subject"
-                                        name="subject"
-                                        placeholder="Ex: Réparation calculateur moteur / Devis formation"
-                                        required
-                                        className="h-12 border-border/50 bg-background/50 focus-visible:ring-primary"
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <Label htmlFor="message" className="text-xs font-bold uppercase tracking-wider">Votre Message</Label>
+                                    <Label htmlFor="message" className={FIELD_LABEL_CLASS}>Votre Message</Label>
                                     <Textarea
                                         id="message"
                                         name="message"

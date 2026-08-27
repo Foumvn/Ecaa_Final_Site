@@ -1,10 +1,13 @@
 "use client";
 
+import { BackgroundVideo } from "@/components/background-video";
+import { STATS } from "@/lib/site-config";
+
 const specs = [
-  { label: "Clients Satisfaits", value: "500+" },
-  { label: "Projets Réalisés", value: "1200+" },
-  { label: "Années d'Expérience", value: "8" },
-  { label: "Membres de l'Équipe", value: "15" },
+  { label: "Clients Satisfaits", value: STATS.clientsSatisfaits },
+  { label: "Projets Réalisés", value: STATS.projetsRealises },
+  { label: "Années d'Expérience", value: STATS.anneesExperience },
+  { label: "Membres de l'Équipe", value: STATS.membresEquipe },
 ];
 
 export function EditorialSection() {
@@ -33,14 +36,7 @@ export function EditorialSection() {
 
       {/* Full-width Video */}
       <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover"
-          src="/video1.mp4"
-        />
+        <BackgroundVideo src="/video1.mp4" />
       </div>
     </section>
   );

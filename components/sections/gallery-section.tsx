@@ -1,14 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
+import { clampProgress, useScrollValue } from "@/hooks/use-scroll-progress";
 
 export function GallerySection() {
   const galleryRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [sectionHeight, setSectionHeight] = useState("100vh");
-  const [translateX, setTranslateX] = useState(0);
-  const rafRef = useRef<number | null>(null);
 
   const images = [
     { src: "/images/eca/portfolio/1.webp", alt: "Réparation électronique" },
@@ -42,49 +41,16 @@ export function GallerySection() {
     };
   }, []);
 
-  const updateTransform = useCallback(() => {
-    if (!galleryRef.current || !containerRef.current) return;
-
-    const rect = galleryRef.current.getBoundingClientRect();
-    const containerWidth = containerRef.current.scrollWidth;
-    const viewportWidth = window.innerWidth;
+  // Horizontal offset driven by vertical scroll through the sticky section
+  const translateX = useScrollValue(() => {
+    if (!galleryRef.current || !containerRef.current) return undefined;
 
     // Total scroll distance needed to reveal all images
-    const totalScrollDistance = containerWidth - viewportWidth;
+    const totalScrollDistance = containerRef.current.scrollWidth - window.innerWidth;
+    const scrolled = Math.max(0, -galleryRef.current.getBoundingClientRect().top);
 
-    // Current scroll position within this section
-    const scrolled = Math.max(0, -rect.top);
-
-    // Progress from 0 to 1
-    const progress = Math.min(1, scrolled / totalScrollDistance);
-
-    // Calculate new translateX
-    const newTranslateX = progress * -totalScrollDistance;
-
-    setTranslateX(newTranslateX);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Cancel any pending animation frame
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-
-      // Use requestAnimationFrame for smooth updates
-      rafRef.current = requestAnimationFrame(updateTransform);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    updateTransform();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [updateTransform]);
+    return clampProgress(scrolled / totalScrollDistance) * -totalScrollDistance;
+  }, 0);
 
   return (
     <section
