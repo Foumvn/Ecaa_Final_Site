@@ -1,54 +1,129 @@
+import { z } from "zod";
 import { buildSystemPrompt } from "@/lib/build-system-prompt";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
+
+const MAX_BODY_BYTES = 32_000;
+const MAX_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 2_000;
+const MAX_TOTAL_CHARS = 12_000;
+const MAX_TOKENS = 800;
+const UPSTREAM_TIMEOUT_MS = 30_000;
+const RATE_LIMIT_REQUESTS = 15;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+const chatRequestSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().trim().min(1).max(MAX_MESSAGE_CHARS),
+      })
+    )
+    .min(1)
+    .max(MAX_MESSAGES)
+    .refine(
+      (messages) =>
+        messages.reduce((total, m) => total + m.content.length, 0) <= MAX_TOTAL_CHARS,
+      { message: "Conversation trop longue" }
+    ),
+});
+
+function jsonError(status: number, error: string, headers: HeadersInit = {}) {
+  return new Response(JSON.stringify({ error }), {
+    status,
+    headers: { "Content-Type": "application/json", ...headers },
+  });
+}
+
+function allowedOrigins(): string[] {
+  return (process.env.ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
+function isSameSiteRequest(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+
+  if (allowedOrigins().includes(origin)) return true;
+
+  try {
+    return new URL(origin).host === new URL(req.url).host;
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { messages } = body;
-
-    if (!messages || !Array.isArray(messages)) {
-      return new Response(
-        JSON.stringify({ error: "Messages invalides" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    if (!isSameSiteRequest(req)) {
+      return jsonError(403, "Origine non autorisée");
     }
 
-    if (!MISTRAL_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Clé API Mistral non configurée" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+    const contentLength = Number(req.headers.get("content-length") ?? 0);
+    if (contentLength > MAX_BODY_BYTES) {
+      return jsonError(413, "Requête trop volumineuse");
     }
 
-    const systemMessage = {
-      role: "system",
-      content: buildSystemPrompt(),
-    };
+    const { allowed, retryAfterSeconds } = checkRateLimit(
+      getClientIp(req),
+      RATE_LIMIT_REQUESTS,
+      RATE_LIMIT_WINDOW_MS
+    );
+    if (!allowed) {
+      return jsonError(429, "Trop de requêtes, veuillez patienter", {
+        "Retry-After": String(retryAfterSeconds),
+      });
+    }
+
+    const rawBody = await req.text();
+    if (rawBody.length > MAX_BODY_BYTES) {
+      return jsonError(413, "Requête trop volumineuse");
+    }
+
+    let parsedBody: unknown;
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch {
+      return jsonError(400, "Corps de requête invalide");
+    }
+
+    const result = chatRequestSchema.safeParse(parsedBody);
+    if (!result.success) {
+      return jsonError(400, "Messages invalides");
+    }
+    const { messages } = result.data;
+
+    const apiKey = process.env.MISTRAL_API_KEY;
+    if (!apiKey) {
+      console.error("MISTRAL_API_KEY is not configured");
+      return jsonError(503, "Service temporairement indisponible");
+    }
 
     const mistralBody = {
       model: "mistral-tiny",
       stream: true,
-      messages: [systemMessage, ...messages],
+      max_tokens: MAX_TOKENS,
+      messages: [{ role: "system", content: buildSystemPrompt() }, ...messages],
     };
 
     const response = await fetch(MISTRAL_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${MISTRAL_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(mistralBody),
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Mistral API error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: `Erreur API: ${response.status}` }),
-        { status: response.status, headers: { "Content-Type": "application/json" } }
-      );
+      console.error("Mistral API error:", response.status);
+      const status = response.status === 429 ? 429 : 502;
+      return jsonError(status, "Service temporairement indisponible");
     }
 
     const stream = new ReadableStream({
@@ -97,14 +172,12 @@ export async function POST(req: Request) {
     return new Response(stream, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (err) {
     console.error("Chat API error:", err);
-    return new Response(
-      JSON.stringify({ error: "Erreur interne du serveur" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonError(500, "Erreur interne du serveur");
   }
 }
