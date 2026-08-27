@@ -1,6 +1,6 @@
 "use client";
 
-import { FadeImage } from "@/components/fade-image";
+import { HoverZoomImage } from "@/components/hover-zoom-image";
 
 const features = [
   {
@@ -54,15 +54,11 @@ export function FeaturedProductsSection() {
       <div className="grid grid-cols-1 gap-4 px-6 pb-20 md:grid-cols-3 md:px-12 lg:px-20">
         {features.map((feature) => (
           <div key={feature.title} className="group">
-            {/* Image */}
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-              <FadeImage
-                src={feature.image || "/placeholder.svg"}
-                alt={feature.title}
-                fill
-                className="object-cover group-hover:scale-105"
-              />
-            </div>
+            <HoverZoomImage
+              src={feature.image}
+              alt={feature.title}
+              className="aspect-[4/3]"
+            />
 
             {/* Content */}
             <div className="py-6">

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { CONTACT, LOGO, NAV_LINKS, PARTNERS, SOCIAL_LINKS } from "@/lib/site-config";
 
-const footerLinks = {
-  explore: [
-    { label: "Services", href: "#services" },
-    { label: "Formation", href: "#formation" },
-    { label: "Portfolio", href: "#portfolio" },
-    { label: "Équipe", href: "#equipe" },
-  ],
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+const footerLinks: Record<"explore" | "about" | "services", FooterLink[]> = {
+  explore: NAV_LINKS,
   about: [
     { label: "Notre Histoire", href: "#" },
     { label: "Témoignages", href: "#" },
@@ -24,6 +25,33 @@ const footerLinks = {
   ],
 };
 
+const partnerLogoWidths: Record<string, number> = {
+  Ministère: 150,
+  CFA: 120,
+  Safyad: 140,
+  Elect: 130,
+};
+
+function FooterLinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
+  return (
+    <div>
+      <h4 className="mb-4 text-sm font-medium text-foreground">{title}</h4>
+      <ul className="space-y-3">
+        {links.map((link) => (
+          <li key={link.label}>
+            <Link
+              href={link.href}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function FooterSection() {
   return (
     <footer className="bg-background">
@@ -33,10 +61,16 @@ export function FooterSection() {
           Nos Partenaires de Confiance
         </p>
         <div className="flex flex-wrap items-center justify-center gap-16 opacity-100 transition-all">
-          <Image src="/images/eca/clients/ministere.webp" alt="Ministère" width={150} height={60} className="h-12 w-auto object-contain" />
-          <Image src="/images/eca/clients/cfa.webp" alt="CFA" width={120} height={60} className="h-12 w-auto object-contain" />
-          <Image src="/images/eca/clients/safyad.webp" alt="Safyad" width={140} height={60} className="h-12 w-auto object-contain" />
-          <Image src="/images/eca/clients/elect.webp" alt="Elect" width={130} height={60} className="h-12 w-auto object-contain" />
+          {PARTNERS.map((partner) => (
+            <Image
+              key={partner.nom}
+              src={partner.logo}
+              alt={partner.nom}
+              width={partnerLogoWidths[partner.nom] ?? 140}
+              height={60}
+              className="h-12 w-auto object-contain"
+            />
+          ))}
         </div>
       </div>
 
@@ -46,72 +80,19 @@ export function FooterSection() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 lg:col-span-2">
             <Link href="/" className="inline-block">
-              <Image
-                src="/images/logo.png"
-                alt="ECA Technology"
-                width={158}
-                height={64}
-                className="h-10 w-auto object-contain"
-              />
+              <Image {...LOGO} className="h-10 w-auto object-contain" />
             </Link>
             <div className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              <p>Ékié, Yaoundé - Cameroun</p>
+              <p>{CONTACT.city}</p>
               <p className="mt-2">Spécialistes en maintenance électronique et innovation technologique depuis 2016.</p>
-              <p className="mt-4"><strong>Tél:</strong> +237 6 56 49 03 21</p>
-              <p><strong>Email:</strong> ecatehnology90@gmail.com</p>
+              <p className="mt-4"><strong>Tél:</strong> {CONTACT.phone}</p>
+              <p><strong>Email:</strong> {CONTACT.email}</p>
             </div>
           </div>
 
-          {/* Explore */}
-          <div>
-            <h4 className="mb-4 text-sm font-medium text-foreground">Découvrir</h4>
-            <ul className="space-y-3">
-              {footerLinks.explore.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* About */}
-          <div>
-            <h4 className="mb-4 text-sm font-medium text-foreground">À Propos</h4>
-            <ul className="space-y-3">
-              {footerLinks.about.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Service */}
-          <div>
-            <h4 className="mb-4 text-sm font-medium text-foreground">Services</h4>
-            <ul className="space-y-3">
-              {footerLinks.services.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterLinkColumn title="Découvrir" links={footerLinks.explore} />
+          <FooterLinkColumn title="À Propos" links={footerLinks.about} />
+          <FooterLinkColumn title="Services" links={footerLinks.services} />
         </div>
       </div>
 
@@ -124,27 +105,20 @@ export function FooterSection() {
 
           {/* Social Links */}
           <div className="flex items-center gap-6">
-            <Link
-              href="https://www.facebook.com/profile.php?id=61550682794649"
-              target="_blank"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Facebook
-            </Link>
-            <Link
-              href="https://www.linkedin.com/home?originalSubdomain=cm"
-              target="_blank"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              LinkedIn
-            </Link>
-            <Link
-              href="https://wa.me/237656490321"
-              target="_blank"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              WhatsApp
-            </Link>
+            {[
+              { label: "Facebook", href: SOCIAL_LINKS.facebook },
+              { label: "LinkedIn", href: SOCIAL_LINKS.linkedin },
+              { label: "WhatsApp", href: SOCIAL_LINKS.whatsapp },
+            ].map((social) => (
+              <Link
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {social.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

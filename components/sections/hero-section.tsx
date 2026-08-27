@@ -1,11 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { BentoSideColumn } from "@/components/bento-side-column";
+import { useStickyScrollProgress } from "@/hooks/use-scroll-progress";
+import { getBentoTransforms, type BentoImage } from "@/lib/bento-animation";
 
 const word = "ECA";
 
-const sideImages = [
+const sideImages: BentoImage[] = [
   {
     src: "/images/eca/portfolio/20.webp",
     alt: "Réparation carte mère",
@@ -34,43 +37,20 @@ const sideImages = [
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollProgress = useStickyScrollProgress(sectionRef);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-
-      const rect = sectionRef.current.getBoundingClientRect();
-      const scrollableHeight = window.innerHeight * 2;
-      const scrolled = -rect.top;
-      const progress = Math.max(0, Math.min(1, scrolled / scrollableHeight));
-
-      setScrollProgress(progress);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  // Text fades out first (0 to 0.2)
-  const textOpacity = Math.max(0, 1 - (scrollProgress / 0.2));
-
-  // Image transforms start after text fades (0.2 to 1)
-  const imageProgress = Math.max(0, Math.min(1, (scrollProgress - 0.2) / 0.8));
-
-  // Smooth interpolations
-  const centerWidth = 100 - (imageProgress * 58); // 100% to 42%
-  const centerHeight = 100 - (imageProgress * 30); // 100% to 70%
-  const sideWidth = imageProgress * 22; // 0% to 22%
-  const sideOpacity = imageProgress;
-  const sideTranslateLeft = -100 + (imageProgress * 100); // -100% to 0%
-  const sideTranslateRight = 100 - (imageProgress * 100); // 100% to 0%
-  const borderRadius = imageProgress * 24; // 0px to 24px
-  const gap = imageProgress * 16; // 0px to 16px
+  const {
+    textOpacity,
+    imageProgress,
+    centerWidth,
+    centerHeight,
+    sideWidth,
+    sideOpacity,
+    sideTranslateLeft,
+    sideTranslateRight,
+    borderRadius,
+    gap,
+  } = getBentoTransforms(scrollProgress);
 
   // Vertical offset for side columns to move them up on mobile
   const sideTranslateY = -(imageProgress * 15); // Move up by 15% when fully expanded
@@ -86,34 +66,16 @@ export function HeroSection() {
             style={{ gap: `${gap}px`, padding: `${imageProgress * 16}px`, paddingBottom: `${60 + (imageProgress * 40)}px` }}
           >
 
-            {/* Left Column */}
-            <div
-              className="flex flex-col will-change-transform"
-              style={{
-                width: `${sideWidth}%`,
-                gap: `${gap}px`,
-                transform: `translateX(${sideTranslateLeft}%) translateY(${sideTranslateY}%)`,
-                opacity: sideOpacity,
-              }}
-            >
-              {sideImages.filter(img => img.position === "left").map((img, idx) => (
-                <div
-                  key={idx}
-                  className="relative overflow-hidden will-change-transform"
-                  style={{
-                    flex: img.span,
-                    borderRadius: `${borderRadius}px`,
-                  }}
-                >
-                  <Image
-                    src={img.src || "/placeholder.svg"}
-                    alt={img.alt}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            <BentoSideColumn
+              images={sideImages}
+              position="left"
+              width={sideWidth}
+              gap={gap}
+              translateX={sideTranslateLeft}
+              translateY={sideTranslateY}
+              opacity={sideOpacity}
+              borderRadius={borderRadius}
+            />
 
             {/* Main Hero Image - Center */}
             <div
@@ -156,34 +118,16 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Right Column */}
-            <div
-              className="flex flex-col will-change-transform"
-              style={{
-                width: `${sideWidth}%`,
-                gap: `${gap}px`,
-                transform: `translateX(${sideTranslateRight}%) translateY(${sideTranslateY}%)`,
-                opacity: sideOpacity,
-              }}
-            >
-              {sideImages.filter(img => img.position === "right").map((img, idx) => (
-                <div
-                  key={idx}
-                  className="relative overflow-hidden will-change-transform"
-                  style={{
-                    flex: img.span,
-                    borderRadius: `${borderRadius}px`,
-                  }}
-                >
-                  <Image
-                    src={img.src || "/placeholder.svg"}
-                    alt={img.alt}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            <BentoSideColumn
+              images={sideImages}
+              position="right"
+              width={sideWidth}
+              gap={gap}
+              translateX={sideTranslateRight}
+              translateY={sideTranslateY}
+              opacity={sideOpacity}
+              borderRadius={borderRadius}
+            />
 
           </div>
         </div>

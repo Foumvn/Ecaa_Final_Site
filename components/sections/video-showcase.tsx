@@ -1,63 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { BackgroundVideo } from "@/components/background-video";
+import { clampProgress, useViewportRevealProgress } from "@/hooks/use-scroll-progress";
+import { WHATSAPP_URL } from "@/lib/site-config";
 
 export function VideoShowcase() {
-  const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [videoScale, setVideoScale] = useState(1.08);
-  const [textOpacity, setTextOpacity] = useState(0);
-  const [textTranslateY, setTextTranslateY] = useState(40);
+  const progress = useViewportRevealProgress(videoRef, 0.85, 0.3);
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+  const videoScale = 1.08 - progress * 0.08;
+  const textOpacity = clampProgress((progress - 0.1) / 0.5);
+  const textTranslateY = 40 - progress * 40;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.15 }
-    );
+  // Staggered fade-and-rise applied to every overlay element
+  const revealStyle = (duration: number, delay = 0) => ({
+    opacity: textOpacity,
+    transform: `translateY(${textTranslateY}px)`,
+    transition: `opacity ${duration}s ease-out ${delay}s, transform ${duration}s ease-out ${delay}s`,
+  });
 
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!videoRef.current) return;
-
-      const rect = videoRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      const startOffset = windowHeight * 0.85;
-      const endOffset = windowHeight * 0.3;
-      const totalDistance = startOffset - endOffset;
-      const currentPosition = startOffset - rect.top;
-      const progress = Math.max(0, Math.min(1, currentPosition / totalDistance));
-
-      const scale = 1.08 - progress * 0.08;
-      setVideoScale(scale);
-
-      const opacity = Math.max(0, Math.min(1, (progress - 0.1) / 0.5));
-      setTextOpacity(opacity);
-
-      const translateY = 40 - progress * 40;
-      setTextTranslateY(translateY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const cornerStyle = {
+    opacity: textOpacity,
+    transition: "opacity 0.8s ease-out 0.5s",
+  };
 
   return (
-    <div ref={sectionRef} className="bg-background">
+    <div className="bg-background">
       <div className="px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36">
         <div
           ref={videoRef}
@@ -68,14 +37,7 @@ export function VideoShowcase() {
             className="relative aspect-video w-full"
             style={{ transform: `scale(${videoScale})`, transition: "transform 0.1s linear" }}
           >
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover"
-              src="/video1.mp4"
-            />
+            <BackgroundVideo src="/video1.mp4" />
           </div>
 
           {/* Gradient overlays */}
@@ -87,11 +49,7 @@ export function VideoShowcase() {
             <div className="absolute top-6 left-6 md:top-10 md:left-10">
               <span
                 className="inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider text-white uppercase backdrop-blur-md"
-                style={{
-                  opacity: textOpacity,
-                  transform: `translateY(${textTranslateY}px)`,
-                  transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
-                }}
+                style={revealStyle(0.6)}
               >
                 ECA Technology
               </span>
@@ -101,11 +59,7 @@ export function VideoShowcase() {
             <div className="w-full max-w-3xl text-center">
               <h2
                 className="mb-4 text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl lg:text-6xl"
-                style={{
-                  opacity: textOpacity,
-                  transform: `translateY(${textTranslateY}px)`,
-                  transition: "opacity 0.7s ease-out 0.1s, transform 0.7s ease-out 0.1s",
-                }}
+                style={revealStyle(0.7, 0.1)}
               >
                 L&apos;Excellence au Service
                 <br />
@@ -114,25 +68,15 @@ export function VideoShowcase() {
 
               <p
                 className="mb-8 text-sm leading-relaxed text-white/70 md:text-base lg:text-lg"
-                style={{
-                  opacity: textOpacity,
-                  transform: `translateY(${textTranslateY}px)`,
-                  transition: "opacity 0.7s ease-out 0.25s, transform 0.7s ease-out 0.25s",
-                }}
+                style={revealStyle(0.7, 0.25)}
               >
                 Depuis 2016, nous repoussons les limites de l&apos;innovation
                 pour offrir des solutions techniques d&apos;exception.
               </p>
 
-              <div
-                style={{
-                  opacity: textOpacity,
-                  transform: `translateY(${textTranslateY}px)`,
-                  transition: "opacity 0.7s ease-out 0.4s, transform 0.7s ease-out 0.4s",
-                }}
-              >
+              <div style={revealStyle(0.7, 0.4)}>
                 <a
-                  href="https://wa.me/237656490321"
+                  href={WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-medium text-black transition-all duration-300 hover:bg-white/90 hover:shadow-lg hover:shadow-white/10"
@@ -155,17 +99,11 @@ export function VideoShowcase() {
           {/* Corner decorations */}
           <div
             className="pointer-events-none absolute top-0 left-0 h-24 w-24 border-l-2 border-t-2 border-white/10"
-            style={{
-              opacity: textOpacity,
-              transition: "opacity 0.8s ease-out 0.5s",
-            }}
+            style={cornerStyle}
           />
           <div
             className="pointer-events-none absolute right-0 bottom-0 h-24 w-24 border-b-2 border-r-2 border-white/10"
-            style={{
-              opacity: textOpacity,
-              transition: "opacity 0.8s ease-out 0.5s",
-            }}
+            style={cornerStyle}
           />
         </div>
       </div>

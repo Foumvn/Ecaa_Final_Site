@@ -1,55 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useRef } from "react";
+import { useStickyScrollProgress } from "@/hooks/use-scroll-progress";
 
 export function PhilosophySection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [alpineTranslateX, setAlpineTranslateX] = useState(-100);
-  const [forestTranslateX, setForestTranslateX] = useState(100);
-  const [titleOpacity, setTitleOpacity] = useState(1);
-  const rafRef = useRef<number | null>(null);
+  const progress = useStickyScrollProgress(
+    sectionRef,
+    (element) => element.offsetHeight - window.innerHeight
+  );
 
-  const updateTransforms = useCallback(() => {
-    if (!sectionRef.current) return;
+  // Réparation block comes from left (-100% to 0%), automobile from right (100% to 0%)
+  const alpineTranslateX = (1 - progress) * -100;
+  const forestTranslateX = (1 - progress) * 100;
 
-    const rect = sectionRef.current.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    const sectionHeight = sectionRef.current.offsetHeight;
-
-    // Calculate progress based on scroll position
-    const scrollableRange = sectionHeight - windowHeight;
-    const scrolled = -rect.top;
-    const progress = Math.max(0, Math.min(1, scrolled / scrollableRange));
-
-    // Alpine comes from left (-100% to 0%)
-    setAlpineTranslateX((1 - progress) * -100);
-
-    // Forest comes from right (100% to 0%)
-    setForestTranslateX((1 - progress) * 100);
-
-    // Title fades out as blocks come together
-    setTitleOpacity(1 - progress);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      rafRef.current = requestAnimationFrame(updateTransforms);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    updateTransforms();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [updateTransforms]);
+  // Title fades out as blocks come together
+  const titleOpacity = 1 - progress;
 
   return (
     <section id="services" className="bg-background">
@@ -67,53 +34,40 @@ export function PhilosophySection() {
               </h2>
             </div>
 
-            {/* Product Grid */}
+            {/* Product Grid - blocks slide in from both edges */}
             <div className="relative z-10 grid grid-cols-1 gap-4 px-6 md:grid-cols-2 md:px-12 lg:px-20">
-              {/* Réparation Image - comes from left */}
-              <div
-                className="relative aspect-[4/3] overflow-hidden rounded-2xl"
-                style={{
-                  transform: `translate3d(${alpineTranslateX}%, 0, 0)`,
-                  WebkitTransform: `translate3d(${alpineTranslateX}%, 0, 0)`,
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden',
-                }}
-              >
-                <Image
-                  src="/images/eca/portfolio/20.webp"
-                  alt="Réparation électronique - carte mère"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute bottom-6 left-6">
-                  <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.2)] text-white">
-                    Électronique
-                  </span>
+              {[
+                {
+                  src: "/images/eca/portfolio/20.webp",
+                  alt: "Réparation électronique - carte mère",
+                  badge: "Électronique",
+                  translateX: alpineTranslateX,
+                },
+                {
+                  src: "/images/eca/portfolio/5.webp",
+                  alt: "Programmation capteur automobile",
+                  badge: "Automobile",
+                  translateX: forestTranslateX,
+                },
+              ].map((block) => (
+                <div
+                  key={block.badge}
+                  className="relative aspect-[4/3] overflow-hidden rounded-2xl"
+                  style={{
+                    transform: `translate3d(${block.translateX}%, 0, 0)`,
+                    WebkitTransform: `translate3d(${block.translateX}%, 0, 0)`,
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                  }}
+                >
+                  <Image src={block.src} alt={block.alt} fill className="object-cover" />
+                  <div className="absolute bottom-6 left-6">
+                    <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.2)] text-white">
+                      {block.badge}
+                    </span>
+                  </div>
                 </div>
-              </div>
-
-              {/* Automobile Image - comes from right */}
-              <div
-                className="relative aspect-[4/3] overflow-hidden rounded-2xl"
-                style={{
-                  transform: `translate3d(${forestTranslateX}%, 0, 0)`,
-                  WebkitTransform: `translate3d(${forestTranslateX}%, 0, 0)`,
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden',
-                }}
-              >
-                <Image
-                  src="/images/eca/portfolio/5.webp"
-                  alt="Programmation capteur automobile"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute bottom-6 left-6">
-                  <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.2)] text-white">
-                    Automobile
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
