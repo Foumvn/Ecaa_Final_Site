@@ -14,6 +14,8 @@ interface Message {
 }
 
 const STORAGE_KEY = "eca-chat-messages";
+const MAX_SENT_MESSAGES = 12;
+const MAX_MESSAGE_CHARS = 2000;
 const INITIAL_MESSAGE: Message = {
   role: "assistant",
   content: "Bonjour ! Je suis l'assistant IA d'ECA Technology. Je connais tout sur nos services, notre équipe et notre entreprise. Comment puis-je vous aider aujourd'hui ?",
@@ -87,7 +89,7 @@ export function ChatBot() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input };
+    const userMessage: Message = { role: "user", content: input.slice(0, MAX_MESSAGE_CHARS) };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput("");
@@ -99,12 +101,12 @@ export function ChatBot() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedMessages }),
+        body: JSON.stringify({ messages: updatedMessages.slice(-MAX_SENT_MESSAGES) }),
       });
 
       if (!res.ok) {
         let errorMsg = "Désolé, j'ai rencontré une erreur. Veuillez réessayer plus tard.";
-        if (res.status === 500) {
+        if (res.status >= 500) {
           errorMsg = "Désolé, le service est temporairement indisponible. Veuillez réessayer plus tard.";
         } else if (res.status === 429) {
           errorMsg = "Désolé, vous avez envoyé trop de messages. Veuillez attendre un moment avant de réessayer.";
@@ -262,6 +264,7 @@ export function ChatBot() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    maxLength={MAX_MESSAGE_CHARS}
                     disabled={isLoading}
                     className="h-10 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
                     aria-label="Votre message"

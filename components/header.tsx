@@ -103,6 +103,7 @@ export function Header() {
           <Link
             href="https://wa.me/237656490321"
             target="_blank"
+            rel="noopener noreferrer"
             className="group relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-all hover:scale-110 active:scale-95"
             aria-label="WhatsApp"
           >
@@ -147,6 +148,7 @@ export function Header() {
                 <Link
                   href="https://wa.me/237656490321"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center gap-3 bg-[#25D366] px-5 py-4 text-center text-lg font-semibold text-white rounded-xl"
                   onClick={() => setIsMenuOpen(false)}
                 >

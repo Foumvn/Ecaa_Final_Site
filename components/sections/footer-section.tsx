@@ -127,6 +127,7 @@ export function FooterSection() {
             <Link
               href="https://www.facebook.com/profile.php?id=61550682794649"
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               Facebook
@@ -134,6 +135,7 @@ export function FooterSection() {
             <Link
               href="https://www.linkedin.com/home?originalSubdomain=cm"
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               LinkedIn
@@ -141,6 +143,7 @@ export function FooterSection() {
             <Link
               href="https://wa.me/237656490321"
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               WhatsApp
